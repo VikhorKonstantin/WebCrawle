@@ -19,9 +19,9 @@ class LinksFinderTest extends Specification {
 
     def "Should return an emply list" () {
         given:
-        linksFinder = new LinksFinder()
+            linksFinder = new LinksFinder()
         when: "Html doc with no links is provided"
-        def links = linksFinder.findAllLinks(TestConstants.HTML_DOCK_WITHOUT_LINK)
+            def links = linksFinder.findAllLinks(TestConstants.HTML_DOCK_WITHOUT_LINK)
         then:
             links.empty
     }

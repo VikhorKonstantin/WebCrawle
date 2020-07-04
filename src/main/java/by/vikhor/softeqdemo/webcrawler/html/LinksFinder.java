@@ -12,9 +12,9 @@ public class LinksFinder {
     public List<String> findAllLinks(String htmlDocument) {
         return Jsoup.parse(htmlDocument)
                 .body()
-                .select("a[href]")
+                .select(HtmlConstants.HREF_SELECTOR)
                 .stream()
-                .map(e -> e.attr("abs:href"))
+                .map(e -> e.attr(HtmlConstants.ABSOLUTE_URL_KEY))
                 .collect(Collectors.toList());
     }
 
