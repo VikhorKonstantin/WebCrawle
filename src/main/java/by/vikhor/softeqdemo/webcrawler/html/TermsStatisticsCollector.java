@@ -2,11 +2,13 @@ package by.vikhor.softeqdemo.webcrawler.html;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Component
 public class TermsStatisticsCollector {
 
     /**

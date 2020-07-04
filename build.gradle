@@ -23,12 +23,12 @@ repositories {
 
 dependencies {
 
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'
-	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+    implementation 'org.springframework.boot:spring-boot-starter'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 
 	implementation 'org.jsoup:jsoup:1.13.1'
+	implementation 'commons-validator:commons-validator:1.6'
 
 	testImplementation  "org.codehaus.groovy:groovy-all:3.0.3"
     testImplementation ('org.spockframework:spock-core:2.0-M2-groovy-3.0') {

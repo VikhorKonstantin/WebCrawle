@@ -1,5 +1,6 @@
 package by.vikhor.softeqdemo.webcrawler.html;
 
+import org.apache.commons.validator.routines.UrlValidator;
 import org.jsoup.Jsoup;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,7 @@ public class LinksFinder {
                 .select(HtmlConstants.HREF_SELECTOR)
                 .stream()
                 .map(e -> e.attr(HtmlConstants.ABSOLUTE_URL_KEY))
+                .filter(UrlValidator.getInstance()::isValid)
                 .collect(Collectors.toList());
     }
 
