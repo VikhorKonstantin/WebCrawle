@@ -2,6 +2,8 @@ package by.vikhor.softeqdemo.webcrawler.html;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -11,21 +13,32 @@ import java.util.stream.Collectors;
 @Component
 public class TermsStatisticsCollector {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(TermsStatisticsCollector.class);
+
     /**
      * Returns {@link Map} with term value as a Map key and number of term hits as a Map key
      *
-     * @param htmlDoc Document to find terms in
+     * @param htmlDocString String representation of the ocument to find terms in
      * @return {@link Map} with term value as a Map key and number of term hits as a Map key
      */
-    public Map<String, Integer> collectTermsStatistics(String htmlDoc, Set<String> terms) {
-        Element body = Jsoup.parse(htmlDoc).body();
-        return terms.stream()
-                .map(t -> collectTermStatistics(t, body))
+    public Map<String, Integer> collectTermsStatistics(String htmlDocString, Set<String> terms) {
+        Element htmlDocBody = Jsoup.parse(htmlDocString).body();
+        Map<String, Integer> statitics = terms.stream()
+                .map(t -> collectTermStatistics(t, htmlDocBody))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        logStatistics(statitics);
+        return statitics;
     }
 
-    private Map.Entry<String, Integer> collectTermStatistics(String t, Element body) {
-        int numberOfHits = body.select(String.format(HtmlConstants.CONTAINS_OWN_SELECTOR_TEMPLATE, t))
+    private void logStatistics(Map<String, Integer> statitics) {
+        String logValue = statitics.entrySet().stream()
+                .map(e -> String.format("%s : %d", e.getKey(), e.getValue()))
+                .collect(Collectors.joining("; "));
+        LOGGER.debug(logValue);
+    }
+
+    private Map.Entry<String, Integer> collectTermStatistics(String t, Element htmlDocBody) {
+        int numberOfHits = htmlDocBody.select(String.format(HtmlConstants.CONTAINS_OWN_SELECTOR_TEMPLATE, t))
                 .size();
         return Map.entry(t, numberOfHits);
     }

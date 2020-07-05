@@ -1,5 +1,6 @@
 package by.vikhor.softeqdemo.webcrawler.crawler;
 
+import by.vikhor.softeqdemo.webcrawler.entity.CrawlingParams;
 import by.vikhor.softeqdemo.webcrawler.html.LinksFinder;
 import by.vikhor.softeqdemo.webcrawler.html.TermsStatisticsCollector;
 import by.vikhor.softeqdemo.webcrawler.network.HtmlFetcher;
@@ -10,36 +11,39 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 
 final class CrawlerTask extends RecursiveTask<Map<String, Integer>> {
-
-    private final String normalizedPageUrl;
+    private final CrawlingParams crawlingParams;
     private final LinksFinder linksFinder;
     private final TermsStatisticsCollector termsStatisticsCollector;
-    private final Set<String> terms;
     private final HtmlFetcher htmlFetcher;
     private final Integer currentDepth;
     private final Set<String> crawled;
+    private final AtomicLong commonNumberOfVisitedPages;
 
-    public CrawlerTask(String pageUrl, LinksFinder linksFinder, TermsStatisticsCollector termsStatisticsCollector,
-                       Set<String> terms, HtmlFetcher htmlFetcher, Integer currentDepth, Set<String> crawled) {
-        this.normalizedPageUrl = URLUtils.normalizeUrl(pageUrl);
+    public CrawlerTask(CrawlingParams crawlingParams, LinksFinder linksFinder,
+                       TermsStatisticsCollector termsStatisticsCollector,
+                       HtmlFetcher htmlFetcher, Integer currentDepth, Set<String> crawled,
+                       AtomicLong commonNumberOfVisitedLinks) {
+        this.crawlingParams = crawlingParams;
         this.linksFinder = linksFinder;
         this.termsStatisticsCollector = termsStatisticsCollector;
-        this.terms = terms;
         this.htmlFetcher = htmlFetcher;
         this.currentDepth = currentDepth;
         this.crawled = crawled;
+        this.commonNumberOfVisitedPages = commonNumberOfVisitedLinks;
     }
-
 
     @Override
     public Map<String, Integer> compute() {
-        crawled.add(normalizedPageUrl);
         String pageContent = fetchPageContentOrEmptyString();
-        Map<String, Integer> termsStatistics = termsStatisticsCollector.collectTermsStatistics(pageContent, terms);
-        if (currentDepth == 2) {
+        crawled.add(crawlingParams.getSeedUrl());
+        Map<String, Integer> termsStatistics =
+                termsStatisticsCollector.collectTermsStatistics(pageContent, crawlingParams.getTerms());
+        if (commonNumberOfVisitedPages.incrementAndGet() >= crawlingParams.getMaxNumberOfVisitedPages()
+                || currentDepth.equals(crawlingParams.getDepth())) {
             return termsStatistics;
         }
         mergeSubstatistics(pageContent, termsStatistics);
@@ -48,7 +52,7 @@ final class CrawlerTask extends RecursiveTask<Map<String, Integer>> {
 
     private String fetchPageContentOrEmptyString() {
         try {
-            return htmlFetcher.fetchPageContent(normalizedPageUrl);
+            return htmlFetcher.fetchPageContent(crawlingParams.getSeedUrl());
         } catch (IOException e) {
             return "";
         }
@@ -56,11 +60,15 @@ final class CrawlerTask extends RecursiveTask<Map<String, Integer>> {
 
     private void mergeSubstatistics(String pageContent, Map<String, Integer> termsStatistics) {
         List<String> allLinks = linksFinder.findAllLinks(pageContent);
+        long limit = crawlingParams.getMaxNumberOfVisitedPages() - commonNumberOfVisitedPages.get();
+        limit = limit < 0 ? 0 : limit;
         allLinks.stream()
+                .unordered()
+                .limit(limit)
                 .filter(l -> !crawled.contains(l))
                 .map(this::forkAndJoin)
                 .forEach(subStatistics -> {
-                    for (var term : terms) {
+                    for (var term : crawlingParams.getTerms()) {
                         termsStatistics.compute(term, accumulateHitsNumber(subStatistics));
                     }
                 });
@@ -71,9 +79,16 @@ final class CrawlerTask extends RecursiveTask<Map<String, Integer>> {
     }
 
     private Map<String, Integer> forkAndJoin(String link) {
-        CrawlerTask subTask = new CrawlerTask(link, linksFinder,
-                termsStatisticsCollector, terms, htmlFetcher, currentDepth + 1, crawled);
+        CrawlerTask subTask = new CrawlerTask(prepareCrawlingParams(link),
+                linksFinder, termsStatisticsCollector, htmlFetcher,
+                currentDepth + 1, crawled, commonNumberOfVisitedPages);
         subTask.fork();
         return subTask.join();
+    }
+
+    private CrawlingParams prepareCrawlingParams(String link) {
+        return new CrawlingParams(URLUtils.normalizeUrl(link), crawlingParams.getDepth(),
+                crawlingParams.getMaxNumberOfVisitedPages(),
+                crawlingParams.getTerms());
     }
 }
