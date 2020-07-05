@@ -30,6 +30,7 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 
 	implementation 'org.jsoup:jsoup:1.13.1'
+	implementation 'com.opencsv:opencsv:5.1'
 	implementation 'commons-validator:commons-validator:1.6'
 
 	testImplementation  "org.codehaus.groovy:groovy-all:3.0.3"

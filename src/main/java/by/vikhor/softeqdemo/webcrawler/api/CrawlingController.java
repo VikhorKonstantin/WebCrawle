@@ -4,6 +4,7 @@ import by.vikhor.softeqdemo.webcrawler.entity.CrawlingParams;
 import by.vikhor.softeqdemo.webcrawler.entity.TermsStatistics;
 import by.vikhor.softeqdemo.webcrawler.service.CrawlingService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +29,7 @@ public class CrawlingController {
         return ResponseEntity.ok(crawlingService.startCrawling(crawlingParams));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TermsStatistics> getTermsStatistics(@PathVariable @NotBlank String id) {
         return ResponseEntity.ok(crawlingService.getTermsStatistics(id));
     }

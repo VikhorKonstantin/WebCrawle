@@ -33,6 +33,7 @@ public class CrawlingServiceImpl implements CrawlingService {
         crawlingParams.setSeedUrl(URLUtils.normalizeUrl(crawlingParams.getSeedUrl()));
         TermsStatistics termsStatistics = new TermsStatistics();
         termsStatistics.setCrawlingStatus(CrawlingStatus.IN_PROGRESS);
+        termsStatistics.setSeedUrl(crawlingParams.getSeedUrl());
         termsStatistics = termsStatisticsRepository.save(termsStatistics);
         final String id = termsStatistics.getTermsStatisticsId();
         CompletableFuture.supplyAsync(
