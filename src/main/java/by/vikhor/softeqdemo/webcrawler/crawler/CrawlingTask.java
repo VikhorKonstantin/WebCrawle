@@ -14,7 +14,7 @@ import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 
-final class CrawlerTask extends RecursiveTask<Map<String, Integer>> {
+final class CrawlingTask extends RecursiveTask<Map<String, Integer>> {
     private final CrawlingParams crawlingParams;
     private final LinksFinder linksFinder;
     private final TermsStatisticsCollector termsStatisticsCollector;
@@ -23,10 +23,10 @@ final class CrawlerTask extends RecursiveTask<Map<String, Integer>> {
     private final Set<String> crawled;
     private final AtomicLong commonNumberOfVisitedPages;
 
-    public CrawlerTask(CrawlingParams crawlingParams, LinksFinder linksFinder,
-                       TermsStatisticsCollector termsStatisticsCollector,
-                       HtmlFetcher htmlFetcher, Integer currentDepth, Set<String> crawled,
-                       AtomicLong commonNumberOfVisitedLinks) {
+    public CrawlingTask(CrawlingParams crawlingParams, LinksFinder linksFinder,
+                        TermsStatisticsCollector termsStatisticsCollector,
+                        HtmlFetcher htmlFetcher, Integer currentDepth, Set<String> crawled,
+                        AtomicLong commonNumberOfVisitedLinks) {
         this.crawlingParams = crawlingParams;
         this.linksFinder = linksFinder;
         this.termsStatisticsCollector = termsStatisticsCollector;
@@ -79,7 +79,7 @@ final class CrawlerTask extends RecursiveTask<Map<String, Integer>> {
     }
 
     private Map<String, Integer> forkAndJoin(String link) {
-        CrawlerTask subTask = new CrawlerTask(prepareCrawlingParams(link),
+        CrawlingTask subTask = new CrawlingTask(prepareCrawlingParams(link),
                 linksFinder, termsStatisticsCollector, htmlFetcher,
                 currentDepth + 1, crawled, commonNumberOfVisitedPages);
         subTask.fork();
