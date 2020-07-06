@@ -14,15 +14,15 @@ class CsvTotalStatisticsWriterTest extends Specification {
             def terms = Set.of("Java", "Junior")
             def stat1 = new TermsStatistics()
             stat1.seedUrl = "url1"
-            stat1.statistics = new HashMap<>()
-            stat1.statistics.put("Java", 5)
-            stat1.statistics.put("Junior", 6)
+            stat1.termToHitsPairs = new HashMap<>()
+            stat1.termToHitsPairs.put("Java", 5)
+            stat1.termToHitsPairs.put("Junior", 6)
             def stat2 = new TermsStatistics()
             stat2.seedUrl = "url2"
-            stat2.statistics = new HashMap<>()
-            stat2.statistics.put("Java", 6)
-            stat2.statistics.put("Junior", 5)
-            stat2.statistics.put("Other", 0)
+            stat2.termToHitsPairs = new HashMap<>()
+            stat2.termToHitsPairs.put("Java", 6)
+            stat2.termToHitsPairs.put("Junior", 5)
+            stat2.termToHitsPairs.put("Other", 0)
         when:
             csvTotalStatisticsWriter.writeTotalStatistics(List.of(stat1, stat2), terms, stringWriter)
             stringWriter.flush()
