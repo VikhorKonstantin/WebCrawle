@@ -69,17 +69,16 @@ public class CrawlingServiceImpl implements CrawlingService {
     }
 
     @Override
-    public byte[] getTotalTermsStatistics(Set<String> terms) throws FileWritingException {
+    public byte[] getTotalTermsStatisticsCsvFileBytes(Set<String> terms) throws FileWritingException {
         List<TermsStatistics> termsStatisticsList =
                 termsStatisticsRepository.findAllByTerms(terms);
-        try (ByteArrayOutputStream stream = new ByteArrayOutputStream();
-             OutputStreamWriter streamWriter = new OutputStreamWriter(stream, StandardCharsets.UTF_8)) {
-            csvTotalStatisticsWriter.writeTotalStatistics(termsStatisticsList, terms, streamWriter);
-            streamWriter.flush();
-            return stream.toByteArray();
-        } catch (IOException e) {
-            throw new FileWritingException(e.getMessage(), e);
-        }
+        return getCsvFileBytes(terms, termsStatisticsList);
+    }
+
+    @Override
+    public byte[] getTopTermsStatisticsCsvFileBytes(Set<String> terms, Integer limit) throws FileWritingException {
+        List<TermsStatistics> topByTerms = termsStatisticsRepository.findTopByTerms(terms, limit);
+        return getCsvFileBytes(terms, topByTerms);
     }
 
     /**
@@ -90,5 +89,16 @@ public class CrawlingServiceImpl implements CrawlingService {
         return statistics.entrySet().stream()
                 .map(e -> new TermToHitsPair(e.getKey(), e.getValue()))
                 .collect(Collectors.toList());
+    }
+
+    private byte[] getCsvFileBytes(Set<String> terms, List<TermsStatistics> termsStatisticsList) throws FileWritingException {
+        try (ByteArrayOutputStream stream = new ByteArrayOutputStream();
+             OutputStreamWriter streamWriter = new OutputStreamWriter(stream, StandardCharsets.UTF_8)) {
+            csvTotalStatisticsWriter.writeTotalStatistics(termsStatisticsList, terms, streamWriter);
+            streamWriter.flush();
+            return stream.toByteArray();
+        } catch (IOException e) {
+            throw new FileWritingException(e.getMessage(), e);
+        }
     }
 }

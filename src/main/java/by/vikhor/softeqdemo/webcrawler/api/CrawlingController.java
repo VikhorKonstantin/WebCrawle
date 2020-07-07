@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Positive;
 import java.util.Set;
 
 @RestController
@@ -40,22 +42,26 @@ public class CrawlingController {
 
     @SneakyThrows
     @GetMapping
-    public ResponseEntity<ByteArrayResource> getTotalTermsStatistics(@RequestParam Set<String> terms) {
-        byte[] totalTermsStatisticsBytes = crawlingService.getTotalTermsStatistics(terms);
+    public ResponseEntity<ByteArrayResource> getTermsStatistics(
+            @RequestParam @NotEmpty Set<@NotBlank String> terms,
+            @RequestParam(required = false) @Positive Integer limit) {
+        byte[] csvFileBytes = limit == null ? crawlingService.getTotalTermsStatisticsCsvFileBytes(terms) :
+                crawlingService.getTopTermsStatisticsCsvFileBytes(terms, limit);
+        String fileName = limit == null ? "totalStatistics" : "top" + limit;
         return ResponseEntity
                 .ok()
-                .headers(buildTotalStatisticsResponseHeaders())
-                .contentLength(totalTermsStatisticsBytes.length)
+                .headers(buildTotalStatisticsResponseHeaders(fileName))
+                .contentLength(csvFileBytes.length)
                 .contentType(MediaType.parseMediaType("text/csv"))
-                .body(new ByteArrayResource(totalTermsStatisticsBytes));
+                .body(new ByteArrayResource(csvFileBytes));
     }
 
-    private HttpHeaders buildTotalStatisticsResponseHeaders() {
+    private HttpHeaders buildTotalStatisticsResponseHeaders(String fileName) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
         headers.add("Pragma", "no-cache");
         headers.add("Content-Disposition", "attachment; filename*=utf-8''"
-                + "totalStatistics.csv");
+                + fileName + ".csv");
         return headers;
     }
 }

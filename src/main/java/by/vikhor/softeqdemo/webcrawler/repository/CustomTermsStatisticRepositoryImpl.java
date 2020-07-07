@@ -6,11 +6,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.CriteriaDefinition;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -27,15 +25,24 @@ public class CustomTermsStatisticRepositoryImpl implements CustomTermsStatisticR
     @Override
     public List<TermsStatistics> findAllByTerms(Set<String> terms) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("termToHitsPairs.term").all(terms));
+        query.addCriteria(createByTermsCriteria(terms));
         return mongoTemplate.find(query, TermsStatistics.class);
+    }
+
+    private Criteria createByTermsCriteria(Set<String> terms) {
+        return Criteria.where("termToHitsPairs.term").all(terms);
     }
 
     @Override
     public List<TermsStatistics> findTopByTerms(Set<String> terms, Integer limit) {
-        Query query = new Query();
+        Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.match(createByTermsCriteria(terms)),
+                Aggregation.project(TermsStatistics.class)
+                        .andExpression("{ $sum : \"termToHitsPairs.numberOfHits\" }").as("summ"),
+                Aggregation.sort(Sort.by(Sort.Direction.ASC, "summ")),
+                Aggregation.limit(limit.longValue()));
 
-        return Collections.emptyList();
+        return mongoTemplate.aggregate(aggregation, TermsStatistics.class, TermsStatistics.class).getMappedResults();
     }
 
 }

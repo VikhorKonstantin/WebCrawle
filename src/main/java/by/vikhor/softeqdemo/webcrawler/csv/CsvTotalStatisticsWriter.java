@@ -16,10 +16,10 @@ public class CsvTotalStatisticsWriter {
 
     public void writeTotalStatistics(List<TermsStatistics> termsStatisticsList, Set<String> terms, Writer writer) {
         CSVWriter csvWriter = new CSVWriter(writer, ';', '\"', '\\', "\n");
-        String[] header = Stream.concat(Stream.of("SeedUrl/CreatedAt"), terms.stream()).toArray(String[]::new);
+        String[] header = Stream.concat(Stream.of("SeedUrl", "CreatedAt"), terms.stream()).toArray(String[]::new);
         csvWriter.writeNext(header);
         termsStatisticsList.stream()
-                .map(s -> Stream.concat(Stream.of(String.format("%s/%s", s.getSeedUrl(), s.createdDate.toString())),
+                .map(s -> Stream.concat(Stream.of(s.getSeedUrl(), s.createdDate.toString()),
                         createStreamOfHitsNumbers(terms, s)).toArray(String[]::new))
                 .forEach(data -> csvWriter.writeNext(data, false));
     }

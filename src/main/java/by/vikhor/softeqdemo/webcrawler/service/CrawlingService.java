@@ -12,5 +12,7 @@ public interface CrawlingService {
 
     TermsStatistics getTermsStatistics(String id);
 
-    byte[] getTotalTermsStatistics(Set<String> terms) throws FileWritingException;
+    byte[] getTotalTermsStatisticsCsvFileBytes(Set<String> terms) throws FileWritingException;
+
+    byte[] getTopTermsStatisticsCsvFileBytes(Set<String> terms, Integer limit) throws FileWritingException;
 }
