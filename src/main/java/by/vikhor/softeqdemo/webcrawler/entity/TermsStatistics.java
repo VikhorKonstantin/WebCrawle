@@ -13,11 +13,11 @@ import java.util.List;
 @Document
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TermsStatistics {
+    @CreatedDate
+    public LocalDateTime createdDate;
     @Id
     private String termsStatisticsId;
     private CrawlingStatus crawlingStatus;
     private List<TermToHitsPair> termToHitsPairs;
     private String seedUrl;
-    @CreatedDate
-    public LocalDateTime createdDate;
 }

@@ -15,7 +15,8 @@ import java.util.stream.Stream;
 public class CsvTotalStatisticsWriter {
 
     public void writeTotalStatistics(List<TermsStatistics> termsStatisticsList, Set<String> terms, Writer writer) {
-        CSVWriter csvWriter = new CSVWriter(writer, ';', '\"', '\\', "\n");
+        CSVWriter csvWriter = new CSVWriter(writer, CsvConstants.CSV_SEPARATOR, CsvConstants.CSV_QUOTECHAR,
+                CsvConstants.CSV_ESCAPECHAR, CsvConstants.CSV_LINE_END);
         String[] header = Stream.concat(Stream.of("SeedUrl", "CreatedAt"), terms.stream()).toArray(String[]::new);
         csvWriter.writeNext(header);
         termsStatisticsList.stream()

@@ -10,6 +10,8 @@ import by.vikhor.softeqdemo.webcrawler.exception.FileWritingException;
 import by.vikhor.softeqdemo.webcrawler.exception.StatisticsNotFoundException;
 import by.vikhor.softeqdemo.webcrawler.network.URLUtils;
 import by.vikhor.softeqdemo.webcrawler.repository.TermsStatisticsRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,7 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
@@ -27,6 +30,7 @@ import java.util.stream.Collectors;
 @Service
 public class CrawlingServiceImpl implements CrawlingService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(CrawlingServiceImpl.class);
     private final TermsStatisticsRepository termsStatisticsRepository;
     private final ForkJoinPool forkJoinPool;
     private final CrawlingTaskFactory crawlingTaskFactory;
@@ -53,18 +57,23 @@ public class CrawlingServiceImpl implements CrawlingService {
         CompletableFuture
                 .supplyAsync(() -> forkJoinPool.invoke(crawlingTaskFactory.createCrawlingTask(crawlingParams)))
                 .thenAcceptAsync(statistics -> {
-                    TermsStatistics completed = termsStatisticsRepository.findById(id)
-                            .orElseThrow(StatisticsNotFoundException::new);
-                    completed.setTermToHitsPairs(convertMapToTermToHitsList(statistics));
-                    completed.setCrawlingStatus(CrawlingStatus.DONE);
-                    termsStatisticsRepository.save(completed);
+                    Optional<TermsStatistics> optionalTermsStatistics = termsStatisticsRepository.findById(id);
+                    if (optionalTermsStatistics.isPresent()) {
+                        TermsStatistics completed = optionalTermsStatistics.get();
+                        completed.setTermToHitsPairs(convertMapToTermToHitsList(statistics));
+                        completed.setCrawlingStatus(CrawlingStatus.DONE);
+                        termsStatisticsRepository.save(completed);
+                    } else {
+                        LOGGER.debug(String.format("Document corresponding to this id ( %s ) was not found. Results " +
+                                "of the crawling will be ignored.", id));
+                    }
                 });
         return termsStatistics;
     }
 
 
     @Override
-    public TermsStatistics getTermsStatistics(String id) {
+    public TermsStatistics getTermsStatistics(String id) throws StatisticsNotFoundException {
         return termsStatisticsRepository.findById(id).orElseThrow(StatisticsNotFoundException::new);
     }
 

@@ -23,15 +23,15 @@ public class TermsStatisticsCollector {
      */
     public Map<String, Integer> collectTermsStatistics(String htmlDocString, Set<String> terms) {
         Element htmlDocBody = Jsoup.parse(htmlDocString).body();
-        Map<String, Integer> statitics = terms.stream()
+        Map<String, Integer> statistics = terms.stream()
                 .map(t -> collectTermStatistics(t, htmlDocBody))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        logStatistics(statitics);
-        return statitics;
+        logStatistics(statistics);
+        return statistics;
     }
 
-    private void logStatistics(Map<String, Integer> statitics) {
-        String logValue = statitics.entrySet().stream()
+    private void logStatistics(Map<String, Integer> statistics) {
+        String logValue = statistics.entrySet().stream()
                 .map(e -> String.format("%s : %d", e.getKey(), e.getValue()))
                 .collect(Collectors.joining("; "));
         LOGGER.debug(logValue);

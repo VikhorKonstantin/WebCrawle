@@ -29,10 +29,6 @@ public class CustomTermsStatisticRepositoryImpl implements CustomTermsStatisticR
         return mongoTemplate.find(query, TermsStatistics.class);
     }
 
-    private Criteria createByTermsCriteria(Set<String> terms) {
-        return Criteria.where("termToHitsPairs.term").all(terms);
-    }
-
     @Override
     public List<TermsStatistics> findTopByTerms(Set<String> terms, Integer limit) {
         Aggregation aggregation = Aggregation.newAggregation(
@@ -43,6 +39,10 @@ public class CustomTermsStatisticRepositoryImpl implements CustomTermsStatisticR
                 Aggregation.limit(limit.longValue()));
 
         return mongoTemplate.aggregate(aggregation, TermsStatistics.class, TermsStatistics.class).getMappedResults();
+    }
+
+    private Criteria createByTermsCriteria(Set<String> terms) {
+        return Criteria.where("termToHitsPairs.term").all(terms);
     }
 
 }

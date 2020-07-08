@@ -1,6 +1,6 @@
 package by.vikhor.softeqdemo.webcrawler.exception;
 
-public class StatisticsNotFoundException extends RuntimeException {
+public class StatisticsNotFoundException extends Exception {
     public StatisticsNotFoundException() {
     }
 

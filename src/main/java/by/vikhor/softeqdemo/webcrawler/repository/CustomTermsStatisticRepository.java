@@ -8,5 +8,6 @@ import java.util.Set;
 public interface CustomTermsStatisticRepository {
 
     List<TermsStatistics> findAllByTerms(Set<String> terms);
+
     List<TermsStatistics> findTopByTerms(Set<String> terms, Integer limit);
 }
