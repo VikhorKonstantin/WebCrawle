@@ -41,6 +41,7 @@ public class CrawlingController {
         return ResponseEntity.ok(crawlingService.startCrawling(crawlingParams));
     }
 
+    @SneakyThrows
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TermsStatistics> getTermsStatistics(@PathVariable @NotBlank String id) {
         return ResponseEntity.ok(crawlingService.getTermsStatistics(id));
