@@ -1,0 +1,17 @@
+version: "3"
+services:
+  webcrawler-mongo:
+    image: mongo:3.6
+    restart: always
+    container_name: "webcrawler-mongo"
+    ports:
+      - 27017:27017
+    command: mongod --smallfiles
+  webcrawler-api:
+    build: .
+    container_name: "webcrawler-api"
+    ports:
+      - 8080:8080
+    links:
+      - webcrawler-mongo
+    env_file: "webcrawler.env"
