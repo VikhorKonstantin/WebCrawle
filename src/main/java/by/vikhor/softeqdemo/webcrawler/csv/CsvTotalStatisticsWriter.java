@@ -1,5 +1,6 @@
 package by.vikhor.softeqdemo.webcrawler.csv;
 
+import by.vikhor.softeqdemo.webcrawler.entity.CrawlingStatus;
 import by.vikhor.softeqdemo.webcrawler.entity.TermToHitsPair;
 import by.vikhor.softeqdemo.webcrawler.entity.TermsStatistics;
 import com.opencsv.CSVWriter;
@@ -20,6 +21,7 @@ public class CsvTotalStatisticsWriter {
         String[] header = Stream.concat(Stream.of("SeedUrl", "CreatedAt"), terms.stream()).toArray(String[]::new);
         csvWriter.writeNext(header);
         termsStatisticsList.stream()
+                .filter(s -> s.getCrawlingStatus() == CrawlingStatus.DONE)
                 .map(s -> Stream.concat(Stream.of(s.getSeedUrl(), s.createdDate.toString()),
                         createStreamOfHitsNumbers(terms, s)).toArray(String[]::new))
                 .forEach(data -> csvWriter.writeNext(data, false));
