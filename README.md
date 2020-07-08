@@ -2,6 +2,7 @@
 Test task for the Intern/Junior Java Software Engineer position in Softeq
 ## Build
 Run commands:
+
     gradle clean build
 ## Run
     docker-compose up --build
